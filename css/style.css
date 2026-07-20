@@ -316,13 +316,15 @@ body {
 /* Run Fields */
 .run-fields {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
 }
 
 .run-fields input {
-    padding: 10px;
-    font-size: 0.85rem;
+    padding: 8px 6px;
+    font-size: 0.75rem;
+    text-align: center;
+    min-width: 0;
 }
 
 /* Exercise Row */
@@ -360,12 +362,14 @@ body {
 .exercise-fields {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
 }
 
 .exercise-fields input {
-    padding: 10px;
-    font-size: 0.8rem;
+    padding: 8px 6px;
+    font-size: 0.75rem;
+    text-align: center;
+    min-width: 0;
 }
 
 /* Buttons */
