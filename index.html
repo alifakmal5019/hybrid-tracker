@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hybrid Tracker">
+    <title>Hybrid Training Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+    <div id="app">
+        <!-- DASHBOARD PAGE -->
+        <div class="page active" id="dashboard">
+            <header class="page-header">
+                <h1>Hybrid Tracker</h1>
+                <p class="subtitle">Lean & Athletic</p>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Current Weight</div>
+                    <div class="stat-value" id="current-weight">--</div>
+                    <div class="stat-unit">kg</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Waist</div>
+                    <div class="stat-value" id="current-waist">--</div>
+                    <div class="stat-unit">cm</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">This Week</div>
+                    <div class="stat-value" id="weekly-workouts">0</div>
+                    <div class="stat-unit">workouts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Streak</div>
+                    <div class="stat-value" id="current-streak">0</div>
+                    <div class="stat-unit">days</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Quick Actions</h2>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="navigateTo('workout')">
+                        <span class="action-icon">🏋️</span>
+                        <span>Log Workout</span>
+                    </button>
+                    <button class="action-btn" onclick="navigateTo('checkin')">
+                        <span class="action-icon">📝</span>
+                        <span>Weekly Check-In</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="btn-secondary" onclick="forceUpdateApp()" style="font-size: 0.85rem;">
+                    🔄 Check for Updates
+                </button>
+            </div>
+
+            <div class="section">
+                <h2>Recent Activity</h2>
+                <div id="recent-activity" class="activity-list">
+                    <p class="empty-state">No workouts logged yet. Start today!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKOUT PAGE -->
+        <div class="page" id="workout">
+            <header class="page-header">
+                <h1>Log Workout</h1>
+            </header>
+
+            <form id="workout-form">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="workout-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Shift Status</label>
+                    <select id="shift-status">
+                        <option value="day-off">Day Off</option>
+                        <option value="day-shift">Day Shift</option>
+                        <option value="night-shift">Night Shift</option>
+                        <option value="post-night">Post Night Shift</option>
+                        <option value="pre-night">Pre Night Shift</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Workout Type</label>
+                    <select id="workout-type" onchange="loadExerciseTemplate()">
+                        <option value="">Select type...</option>
+                        <option value="upper">Upper Body</option>
+                        <option value="lower">Lower Body</option>
+                        <option value="full">Full Body</option>
+                        <option value="run-only">Run Only</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+
+                <div id="exercises-container"></div>
+
+                <button type="button" class="btn-secondary" onclick="addExercise()">+ Add Exercise</button>
+
+                <div class="form-group run-section">
+                    <label>Run Details (if applicable)</label>
+                    <div class="run-fields">
+                        <input type="number" id="run-distance" placeholder="Distance (km)" step="0.1">
+                        <input type="text" id="run-pace" placeholder="Pace (min/km)">
+                        <input type="number" id="run-rpe" placeholder="RPE (1-10)" min="1" max="10">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Session Notes</label>
+                    <textarea id="session-notes" rows="3" placeholder="How did you feel?"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">Save Workout</button>
+            </form>
+        </div>
+
+        <!-- CHECK-IN PAGE -->
+        <div class="page" id="checkin">
+            <header class="page-header">
+                <h1>Weekly Check-In</h1>
+            </header>
+
+            <form id="checkin-form">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="checkin-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="checkin-weight" step="0.1" placeholder="79.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Waist at Navel (cm)</label>
+                    <input type="number" id="checkin-waist" step="0.1" placeholder="84.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Energy Level (1-10)</label>
+                    <div class="range-container">
+                        <input type="range" id="checkin-energy" min="1" max="10" value="5" oninput="updateRangeLabel('energy-label', this.value)">
+                        <span class="range-label" id="energy-label">5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sleep Quality (1-10)</label>
+                    <div class="range-container">
+                        <input type="range" id="checkin-sleep" min="1" max="10" value="5" oninput="updateRangeLabel('sleep-label', this.value)">
+                        <span class="range-label" id="sleep-label">5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Night Shifts This Week</label>
+                    <input type="number" id="checkin-shifts" min="0" max="7" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="checkin-notes" rows="3" placeholder="Any observations this week?"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">Save Check-In</button>
+            </form>
+        </div>
+
+        <!-- HISTORY PAGE -->
+        <div class="page" id="history">
+            <header class="page-header">
+                <h1>History</h1>
+            </header>
+
+            <div class="history-tabs">
+                <button class="tab-btn active" data-tab="workouts" onclick="showHistoryTab('workouts')">Workouts</button>
+                <button class="tab-btn" data-tab="checkins" onclick="showHistoryTab('checkins')">Check-Ins</button>
+            </div>
+
+            <div id="workouts-history" class="history-list">
+                <p class="empty-state">No workouts yet</p>
+            </div>
+
+            <div id="checkins-history" class="history-list hidden">
+                <p class="empty-state">No check-ins yet</p>
+            </div>
+        </div>
+
+        <!-- REFERENCE PAGE -->
+        <div class="page" id="reference">
+            <header class="page-header">
+                <h1>Exercise Guide</h1>
+            </header>
+
+            <div class="reference-section">
+                <h2>Must-Do Exercises</h2>
+                <div class="exercise-category">
+                    <h3>Lower Body (2x/week)</h3>
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-name">Romanian Deadlift</div>
+                            <div class="exercise-detail">3×10 | RPE 7 | +2.5kg / 2-3 weeks</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Bulgarian Split Squat</div>
+                            <div class="exercise-detail">3×8/leg | RPE 7 | More reps → weight</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Goblet Squat / Leg Press</div>
+                            <div class="exercise-detail">3×10 | RPE 7 | Moderate, controlled</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-category">
+                    <h3>Upper Pull (2x/week)</h3>
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-name">Pull-ups / Lat Pulldown</div>
+                            <div class="exercise-detail">3×8-10 | RPE 7 | More reps → add weight</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Cable / Barbell Row</div>
+                            <div class="exercise-detail">3×10 | RPE 7 | +2.5kg monthly</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-category">
+                    <h3>Upper Push (2x/week)</h3>
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-name">Incline Dumbbell Press</div>
+                            <div class="exercise-detail">3×10 | RPE 7 | More reps → +2.5kg</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Overhead Press (DB)</div>
+                            <div class="exercise-detail">3×10 | RPE 7 | Controlled, not heavy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-category">
+                    <h3>Core & Accessory</h3>
+                    <div class="exercise-list">
+                        <div class="exercise-item">
+                            <div class="exercise-name">Plank Variations</div>
+                            <div class="exercise-detail">3×45-60sec | RPE 6-7 | Longer holds</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Face Pulls</div>
+                            <div class="exercise-detail">3×15 | RPE 6-7 | More reps</div>
+                        </div>
+                        <div class="exercise-item">
+                            <div class="exercise-name">Lateral Raises</div>
+                            <div class="exercise-detail">3×12 | RPE 6-7 | More reps</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <h2>Running Protocol</h2>
+                <div class="exercise-category">
+                    <div class="exercise-item">
+                        <div class="exercise-name">Tempo Run</div>
+                        <div class="exercise-detail">1x/week | 20-30min | RPE 7-8 | Faster pace</div>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-name">Easy Run</div>
+                        <div class="exercise-detail">1-2x/week | 20-40min | RPE 5-6 | Longer distance</div>
+                    </div>
+                    <div class="exercise-item">
+                        <div class="exercise-name">Long Easy Run</div>
+                        <div class="exercise-detail">1x/week (optional) | 45-60min | RPE 5-6 | Longer distance</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <h2>RPE Guide</h2>
+                <div class="rpe-table">
+                    <div class="rpe-row">
+                        <span class="rpe-num">6</span>
+                        <span>Could do 4 more reps</span>
+                    </div>
+                    <div class="rpe-row">
+                        <span class="rpe-num">7</span>
+                        <span>Could do 2-3 more reps</span>
+                    </div>
+                    <div class="rpe-row">
+                        <span class="rpe-num">8</span>
+                        <span>Could do 1 more rep</span>
+                    </div>
+                    <div class="rpe-row">
+                        <span class="rpe-num">9</span>
+                        <span>Could not do another rep</span>
+                    </div>
+                    <div class="rpe-row">
+                        <span class="rpe-num">10</span>
+                        <span>Maximal effort - rarely use</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-btn" data-page="workout">
+                <span class="nav-icon">💪</span>
+                <span class="nav-label">Workout</span>
+            </button>
+            <button class="nav-btn" data-page="checkin">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Check-In</span>
+            </button>
+            <button class="nav-btn" data-page="history">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">History</span>
+            </button>
+            <button class="nav-btn" data-page="reference">
+                <span class="nav-icon">📖</span>
+                <span class="nav-label">Guide</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="js/app.js?v=4"></script>
+</body>
+</html>
